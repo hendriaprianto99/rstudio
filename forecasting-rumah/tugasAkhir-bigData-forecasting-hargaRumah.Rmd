@@ -1,0 +1,82 @@
+---
+title: "tugasAkhir-bigData-forecasting-hargaRumah"
+output: html_document
+date: "2023-01-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+```
+
+
+```{r}
+# If these libraries are not installed on your machine, you can use the install.packages("name_of_package") command and library(name_of package) to do the same thing as the require() function I am using below. I just like require because it is a single line of code :)
+
+# Import Libraries
+require(forecast)
+require(tseries)
+require(tidyverse)
+```
+
+```{r}
+# set working directory
+setwd("~/")
+```
+
+```{r}
+# Import Data
+CaseShiller <- read.csv("data.csv")
+
+# Check Data Import
+head(CaseShiller)
+```
+
+```{r}
+# Change name of data colum to units
+names(CaseShiller)[2] <- "Units"
+
+# Creates a Units Object as intermediate to transform into tine series
+CSUnits <- CaseShiller$Units
+
+# Creates Tinme Series Object that starts in January 2000 with a monthly frequency
+tCaseShiller <- ts(CSUnits, start = c (2008, 1), frequency = 12)
+
+# Check Data Transformation
+tCaseShiller
+```
+
+```{r}
+# Automatically create ARIMA model
+fit <- auto.arima(tCaseShiller)
+fit
+```
+
+```{r}
+# Check Accuracy
+accuracy(fit)
+```
+
+```{r}
+# Create simple plot menggunakan forecast untuk 1 tahun kedepan
+plot(forecast(fit, 12), xlab = "Date", ylab = "Units", main = "ARIMA forecast untuk Case-Shillder Index")
+```
+
+```{r}
+# Get table of forecasted values. Check back next year to see wether this was close
+pred_values <- forecast(fit, 12)
+pred_values
+```
+
+```{r}
+# Check assumptions of normality & Autocorrelation
+qqnorm( fit$residuals)
+qqline(fit$residuals)
+Box.test (fit$residuals, type = "Ljung-Box")
+
+# Has high p-value, so autocorrelations not significantly different than 0
+# There are a few possible outliers, but most of the data is pretty normally distributed
+```
+
